@@ -62,8 +62,10 @@ def get_user_by_email(db: Session, email: str):
 
 
 def create_task(db: Session, task: TaskCreate, user_id: int):
-    check_task = db.query(models.Tasks).filter(models.Tasks.user_id == user_id).filter(
-        models.Tasks.name == task.name).first()
+    check_task = db.query(models.Tasks)\
+        .filter(models.Tasks.user_id == user_id)\
+        .filter(models.Tasks.name == task.name)\
+        .first()
     if check_task is None:
         data = models.Tasks(user_id=user_id,
                             name=task.name,
@@ -93,3 +95,7 @@ def delete_task(db: Session, task: TaskDelete, user_id: int):
     db.query(models.Tasks).filter(models.Tasks.user_id == user_id).filter(models.Tasks.name == task.name).delete()
     db.commit()
     return "Success"
+
+
+def get_tasks(db: Session, user_id: int):
+    return db.query(models.Tasks).filter(models.Tasks.user_id == user_id).all()

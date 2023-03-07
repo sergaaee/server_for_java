@@ -125,10 +125,10 @@ async def refresh_tokens(fingerprint: str = Header(), refresh_token: str = Heade
     )
 
 
-@app.get("/users", tags=["User"], response_model=UserData, )
+@app.get("/users", tags=["User"], )
 async def full_user_data(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
-    check_user(db=db, current_user=current_user)
-    return current_user
+    user = check_user(db=db, current_user=current_user)
+    return current_user, crud.get_tasks(db=db, user_id=user.id)
 
 
 @app.post("/tasks", tags=["Tasks"])
