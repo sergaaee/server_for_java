@@ -147,6 +147,12 @@ async def create_new_task(task: TaskCreate, db: Session = Depends(get_db), curre
     return result
 
 
+@app.get("/tasks", tags=["Tasks"])
+async def get_tasks(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+    user = check_user(db=db, current_user=current_user)
+    tasks = crud.get_tasks(db=db, user_id=user.id)
+    return [tasks]
+
 @app.patch("/tasks", tags=["Tasks"])
 async def update_task(task: TaskUpdate, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
