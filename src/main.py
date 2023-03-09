@@ -110,6 +110,7 @@ async def login_for_new_session(fingerprint: str = Header(), db: Session = Depen
 
 @app.post("/tokens/refresh", tags=["token"],)
 async def refresh_tokens(fingerprint: str = Header(), refresh_token: str = Header(), db: Session = Depends(get_db)):
+
     if crud.refresh_tokens(fingerprint, refresh_token, db):
         user_id = db.query(models.Sessions).filter(models.Sessions.refresh_token == refresh_token).first().user_id
         username = db.query(models.Users).filter(models.Users.id == user_id).first().username
@@ -118,11 +119,12 @@ async def refresh_tokens(fingerprint: str = Header(), refresh_token: str = Heade
             data={"sub": username}, expires_delta=access_token_expires
         )
         return {"access_token": access_token}
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Token has expired",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @app.get("/users", tags=["User"], )
@@ -131,7 +133,7 @@ async def full_user_data(db: Session = Depends(get_db), current_user: UserAuth =
     tasks = crud.get_tasks(db=db, user_id=user.id)
     user.__delattr__("password")
     return user, tasks
-
+ 
 
 @app.post("/tasks", tags=["Tasks"])
 async def create_new_task(task: TaskCreate, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
