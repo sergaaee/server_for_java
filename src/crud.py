@@ -78,17 +78,13 @@ def create_task(db: Session, task: TaskCreate, user_id: int):
         db.commit()
         db.refresh(data)
         return "Success"
-    return None
+    return
 
 
 def update_task(db: Session, task: TaskUpdate, user_id: int):
-    check_task = db.query(models.Tasks).filter(models.Tasks.user_id == user_id).filter(
-        models.Tasks.name == task.name).first()
-    if check_task is None:
-        db.query(models.Tasks).filter(models.Tasks.user_id == user_id).filter(models.Tasks.name == task.name).update({"name": task.new_name, "start_time": task.new_stime, "end_time": task.new_etime, "description": task.new_desc})
-        db.commit()
-        return "Success"
-    return None
+    db.query(models.Tasks).filter(models.Tasks.user_id == user_id).filter(models.Tasks.name == task.name).update({"name": task.new_name, "start_time": task.new_stime, "end_time": task.new_etime, "description": task.new_desc})
+    db.commit()
+    return "Success"
 
 
 def delete_task(db: Session, task: TaskDelete, user_id: int):

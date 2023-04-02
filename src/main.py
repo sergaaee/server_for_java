@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException, status, Header
+import asyncio
+
+from fastapi import Depends, FastAPI, HTTPException, status, Header, BackgroundTasks
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -133,7 +135,7 @@ async def full_user_data(db: Session = Depends(get_db), current_user: UserAuth =
     tasks = crud.get_tasks(db=db, user_id=user.id)
     user.__delattr__("password")
     return user, tasks
- 
+
 
 @app.post("/tasks", tags=["Tasks"])
 async def create_new_task(task: TaskCreate, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
@@ -153,15 +155,11 @@ async def get_tasks(db: Session = Depends(get_db), current_user: UserAuth = Depe
     tasks = crud.get_tasks(db=db, user_id=user.id)
     return [tasks]
 
+
 @app.patch("/tasks", tags=["Tasks"])
 async def update_task(task: TaskUpdate, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
     result = crud.update_task(db=db, task=task, user_id=db_user.id)
-    if result is None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Name already exists",
-        )
     return result
 
 
@@ -169,4 +167,3 @@ async def update_task(task: TaskUpdate, db: Session = Depends(get_db), current_u
 async def delete_task(task: TaskDelete, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
     return crud.delete_task(db=db, task=task, user_id=db_user.id)
-
