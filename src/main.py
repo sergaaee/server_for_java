@@ -1,6 +1,4 @@
-import asyncio
-
-from fastapi import Depends, FastAPI, HTTPException, status, Header, BackgroundTasks
+from fastapi import Depends, FastAPI, HTTPException, status, Header
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -9,7 +7,6 @@ from config import get_settings
 from . import crud, models
 from .database import SessionLocal, engine
 from .schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserData, UserAuth, FriendDelete, ShareDelete
-
 models.Base.metadata.create_all(bind=engine)
 
 settings = get_settings()

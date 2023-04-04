@@ -22,6 +22,7 @@ class Tasks(Base):
     start_time = Column(TIMESTAMP)
     end_time = Column(TIMESTAMP)
     description = Column(String)
+    status = Column(String)
     created_at = Column(TIMESTAMP)
 
 

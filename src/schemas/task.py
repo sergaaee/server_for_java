@@ -9,7 +9,8 @@ class Task(BaseModel):
     start_time: Optional[datetime]
     end_time: Optional[datetime]
     description: Optional[str]
-    #status: Optional[str]
+    status: Optional[str]
+    created_at: Optional[datetime]
 
 
 class TaskCreate(Task):
@@ -17,7 +18,8 @@ class TaskCreate(Task):
     start_time: datetime
     end_time: datetime
     description: str
-    #status: str
+    status: str
+    created_at: Optional[datetime]
 
 
 class TaskUpdate(BaseModel):
@@ -26,7 +28,7 @@ class TaskUpdate(BaseModel):
     new_stime: datetime
     new_etime: datetime
     new_desc: str
-    #new_status: str
+    new_status: str
 
 
 class TaskDelete(BaseModel):
