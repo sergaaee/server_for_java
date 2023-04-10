@@ -1,12 +1,14 @@
+import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, status, Header
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from config import get_settings
-from . import crud, models
-from .database import SessionLocal, engine
-from .schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserData, UserAuth, FriendDelete, ShareDelete
+from src import crud, models
+from database import SessionLocal, engine
+from schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserAuth
+
 models.Base.metadata.create_all(bind=engine)
 
 settings = get_settings()
@@ -164,3 +166,7 @@ async def update_task(task: TaskUpdate, db: Session = Depends(get_db), current_u
 async def delete_task(task: TaskDelete, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
     return crud.delete_task(db=db, task=task, user_id=db_user.id)
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, workers=2)

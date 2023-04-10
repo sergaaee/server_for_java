@@ -3,8 +3,7 @@ from hashlib import sha256 as hasher
 from config import get_settings
 from sqlalchemy.orm import Session
 from . import models
-from .schemas import UserCreate, TaskCreate, TaskDelete, TaskUpdate
-from sqlalchemy.sql import text
+from schemas import UserCreate, TaskCreate, TaskDelete, TaskUpdate
 
 
 settings = get_settings()
