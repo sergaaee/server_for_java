@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP
-from .database import Base
+from database import Base
 
 
 class Users(Base):
@@ -10,7 +10,6 @@ class Users(Base):
     email = Column(String, unique=True)
     password = Column(String)
     reg_date = Column(TIMESTAMP)
-    friends_ids = Column(String)
 
 
 class Tasks(Base):

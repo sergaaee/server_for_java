@@ -5,7 +5,8 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import JWTError, jwt
 from config import get_settings
-from src import crud, models
+import models
+import crud
 from database import SessionLocal, engine
 from schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserAuth
 

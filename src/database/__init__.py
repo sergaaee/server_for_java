@@ -1,1 +1,1 @@
-from src.database.database import SessionLocal, engine, Base
+from database.database import SessionLocal, engine, Base

@@ -2,7 +2,7 @@ import datetime
 from hashlib import sha256 as hasher
 from config import get_settings
 from sqlalchemy.orm import Session
-from . import models
+import models
 from schemas import UserCreate, TaskCreate, TaskDelete, TaskUpdate
 
 
