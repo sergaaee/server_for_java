@@ -7,15 +7,19 @@ from pydantic.validators import datetime
 class Friend(BaseModel):
     user_id: Optional[int]
     friend_id: Optional[int]
+    status: Optional[str]
     created_at: Optional[datetime]
 
 
-class FriendNew(Friend):
-    user_id: int
+class FriendNew(BaseModel):
+    friend_id: int
+    created_at: datetime
+
+
+class FriendConfirm(BaseModel):
     friend_id: int
     created_at: datetime
 
 
 class FriendDelete(BaseModel):
-    user_id: int
     friend_id: int

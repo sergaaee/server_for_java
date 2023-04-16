@@ -8,7 +8,7 @@ from config import get_settings
 import models
 import crud
 from database import SessionLocal, engine
-from schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserAuth
+from schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserAuth, FriendNew, FriendConfirm, FriendDelete
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -82,7 +82,7 @@ def check_user(db: Session = Depends(get_db), current_user: UserAuth = Depends(g
     return db_user
 
 
-@app.post("/users", tags=["User"],)
+@app.post("/users", tags=["User"], )
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user_username = crud.get_user_by_username(db, username=user.username)
     db_user_email = crud.get_user_by_email(db, email=user.email)
@@ -94,7 +94,8 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @app.post("/tokens", tags=["token"], )
-async def login_for_new_session(fingerprint: str = Header(), db: Session = Depends(get_db), form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_for_new_session(fingerprint: str = Header(), db: Session = Depends(get_db),
+                                form_data: OAuth2PasswordRequestForm = Depends()):
     user = auth_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(
@@ -110,11 +111,10 @@ async def login_for_new_session(fingerprint: str = Header(), db: Session = Depen
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 
-@app.post("/tokens/refresh", tags=["token"],)
+@app.post("/tokens/refresh", tags=["token"], )
 async def refresh_tokens(fingerprint: str = Header(), refresh_token: str = Header(), db: Session = Depends(get_db)):
-
     if crud.refresh_tokens(fingerprint, refresh_token, db):
-        user_id = db.query(models.Sessions).filter(models.Sessions.refresh_token == refresh_token).first().user_id
+        user_id: int = db.query(models.Sessions).filter(models.Sessions.refresh_token == refresh_token).first().user_id
         username = db.query(models.Users).filter(models.Users.id == user_id).first().username
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = create_access_token(
@@ -138,7 +138,8 @@ async def full_user_data(db: Session = Depends(get_db), current_user: UserAuth =
 
 
 @app.post("/tasks", tags=["Tasks"])
-async def create_new_task(task: TaskCreate, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+async def create_new_task(task: TaskCreate, db: Session = Depends(get_db),
+                          current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
     result = crud.create_task(db=db, task=task, user_id=db_user.id)
     if result is None:
@@ -157,16 +158,57 @@ async def get_tasks(db: Session = Depends(get_db), current_user: UserAuth = Depe
 
 
 @app.patch("/tasks", tags=["Tasks"])
-async def update_task(task: TaskUpdate, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+async def update_task(task: TaskUpdate, db: Session = Depends(get_db),
+                      current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
     result = crud.update_task(db=db, task=task, user_id=db_user.id)
     return result
 
 
 @app.delete("/tasks", tags=["Tasks"])
-async def delete_task(task: TaskDelete, db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+async def delete_task(task: TaskDelete, db: Session = Depends(get_db),
+                      current_user: UserAuth = Depends(get_current_user)):
     db_user = check_user(db=db, current_user=current_user)
     return crud.delete_task(db=db, task=task, user_id=db_user.id)
+
+
+@app.post("/friend", tags=["Friends"])
+async def add_friend(friend: FriendNew, db: Session = Depends(get_db),
+                     current_user: UserAuth = Depends(get_current_user)):
+    db_user = check_user(db=db, current_user=current_user)
+    result = crud.add_friend(db=db, friend=friend, user_id=db_user.id)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    elif result == "Found":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Connection already exists",
+        )
+    else:
+        return "Success"
+
+
+@app.get("/friend", tags=["Friends"])
+async def get_friend_list(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+    db_user = check_user(db=db, current_user=current_user)
+    return crud.get_friend_list(db=db, user_id=db_user.id)
+
+
+@app.patch("/friend", tags=["Friends"])
+async def confirm_friend(friend: FriendConfirm, db: Session = Depends(get_db),
+                         current_user: UserAuth = Depends(get_current_user)):
+    db_user = check_user(db=db, current_user=current_user)
+    return crud.confirm_friend(db=db, friend=friend, user_id=db_user.id)
+
+
+@app.delete("/friend", tags=["Friends"])
+async def delete_friend(friend: FriendDelete, db: Session = Depends(get_db),
+                        current_user: UserAuth = Depends(get_current_user)):
+    db_user = check_user(db=db, current_user=current_user)
+    return crud.delete_friend(db=db, friend=friend, user_id=db_user.id)
 
 
 if __name__ == "__main__":

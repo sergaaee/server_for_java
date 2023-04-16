@@ -31,6 +31,7 @@ class Friends(Base):
     id = Column(Integer, primary_key=True, unique=True)
     user_id = Column(Integer)
     friend_id = Column(Integer)
+    status = Column(String)
     created_at = Column(TIMESTAMP)
 
 
