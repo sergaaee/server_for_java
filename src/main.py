@@ -8,7 +8,8 @@ from config import get_settings
 import models
 import crud
 from database import SessionLocal, engine
-from schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserAuth, FriendNew, FriendConfirm, FriendDelete
+from schemas import TaskUpdate, TaskCreate, TaskDelete, UserCreate, UserAuth, FriendNew, FriendConfirm, FriendDelete, \
+    FriendTasks
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -210,6 +211,23 @@ async def delete_friend(friend: FriendDelete, db: Session = Depends(get_db),
     db_user = check_user(db=db, current_user=current_user)
     return crud.delete_friend(db=db, friend=friend, user_id=db_user.id)
 
+
+@app.get("/friend/tasks", tags=["Friends", "Tasks"])
+async def get_friend_tasks(friend_id: int = Header(),
+                           db: Session = Depends(get_db),
+                           current_user: UserAuth = Depends(get_current_user)):
+    db_user = check_user(db=db, current_user=current_user)
+    check_friendship = db.query(models.Friends) \
+        .filter(models.Friends.user_id == db_user.id) \
+        .filter(models.Friends.friend_id == friend_id) \
+        .all()
+    if check_friendship:
+        return [crud.get_tasks(db=db, user_id=friend_id)]
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Something went wrong",
+        )
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, workers=2)

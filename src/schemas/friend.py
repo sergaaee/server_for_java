@@ -23,3 +23,7 @@ class FriendConfirm(BaseModel):
 
 class FriendDelete(BaseModel):
     friend_id: int
+
+
+class FriendTasks(BaseModel):
+    friend_id: int
