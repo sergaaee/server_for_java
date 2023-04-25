@@ -11,6 +11,8 @@ class Task(BaseModel):
     description: Optional[str]
     status: Optional[str]
     created_at: Optional[datetime]
+    sharing_from: Optional[int]
+    sharing_to: Optional[int]
 
 
 class TaskCreate(Task):
@@ -20,6 +22,7 @@ class TaskCreate(Task):
     description: str
     status: str
     created_at: Optional[datetime]
+    sharing_to: int
 
 
 class TaskUpdate(BaseModel):

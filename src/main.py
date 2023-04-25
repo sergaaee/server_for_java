@@ -229,5 +229,14 @@ async def get_friend_tasks(friend_id: int = Header(),
             detail="Something went wrong",
         )
 
+
+@app.post("/friend/tasks", tags=["Friends", "Tasks"])
+async def add_task_to_friend(task: TaskCreate,
+                             friend_id: int = Header(),
+                             db: Session = Depends(get_db),
+                             current_user: UserAuth = Depends(get_current_user)):
+    db_user = check_user(db=db, current_user=current_user)
+    return crud.add_task_to_friend(db=db, user_id=db_user.id, friend_id=friend_id, task=task)
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, workers=2)

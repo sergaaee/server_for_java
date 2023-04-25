@@ -3,7 +3,7 @@ from hashlib import sha256 as hasher
 from config import get_settings
 from sqlalchemy.orm import Session
 import models
-from schemas import UserCreate, TaskCreate, TaskDelete, TaskUpdate, FriendNew, FriendConfirm, FriendDelete
+from schemas import UserCreate, TaskCreate, TaskDelete, TaskUpdate, FriendNew, FriendConfirm, FriendDelete, ShareNew
 
 settings = get_settings()
 
@@ -87,7 +87,9 @@ def create_task(db: Session, task: TaskCreate, user_id: int):
                             end_time=task.end_time,
                             description=task.description,
                             status=task.status,
-                            created_at=task.created_at
+                            created_at=task.created_at,
+                            sharing_to=task.sharing_to,
+                            sharing_from=task.sharing_from
                             )
         db.add(data)
         db.commit()
@@ -116,11 +118,12 @@ def delete_task(db: Session, task: TaskDelete, user_id: int):
 
 
 def get_tasks(db: Session, user_id: int):
-    return db.query(models.Tasks) \
+    tasks = db.query(models.Tasks) \
         .filter(models.Tasks.user_id == user_id) \
         .order_by(models.Tasks.status.desc()) \
         .order_by(models.Tasks.start_time.asc()) \
         .all()
+    return tasks
 
 
 def add_friend(db: Session, friend: FriendNew, user_id: int):
@@ -193,3 +196,26 @@ def delete_friend(db: Session, user_id: int, friend: FriendDelete):
         .delete()
     db.commit()
     return "Success"
+
+
+def add_task_to_friend(db: Session, user_id: int, friend_id: int, task: TaskCreate):
+    check_task = db.query(models.Tasks) \
+        .filter(models.Tasks.user_id == friend_id) \
+        .filter(models.Tasks.name == task.name) \
+        .first()
+    if check_task is None:
+        data = models.Tasks(user_id=friend_id,
+                            name=task.name,
+                            start_time=task.start_time,
+                            end_time=task.end_time,
+                            description=task.description,
+                            status="*",
+                            created_at=task.created_at,
+                            sharing_from=user_id,
+                            sharing_to=task.sharing_to
+                            )
+        db.add(data)
+        db.commit()
+        db.refresh(data)
+        return "Success"
+    return

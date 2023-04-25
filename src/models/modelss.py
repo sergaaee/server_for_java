@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP
+from sqlalchemy import Column, Integer, String, TIMESTAMP, Boolean
 from database import Base
 
 
@@ -23,13 +23,15 @@ class Tasks(Base):
     description = Column(String)
     status = Column(String)
     created_at = Column(TIMESTAMP)
+    sharing_from = Column(Integer)
+    sharing_to = Column(Integer)
 
 
 class Friends(Base):
     __tablename__ = "Friends"
 
     id = Column(Integer, primary_key=True, unique=True)
-    user_id: Column[int] = Column(Integer)
+    user_id: Column[Integer] = Column(Integer)
     friend_id = Column(Integer)
     status = Column(String)
     created_at = Column(TIMESTAMP)
@@ -40,6 +42,7 @@ class Share(Base):
 
     id = Column(Integer, primary_key=True, unique=True)
     user_id = Column(Integer)
+    friend_id = Column(Integer)
     task_id = Column(Integer)
 
 
