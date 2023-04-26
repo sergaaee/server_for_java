@@ -4,11 +4,13 @@ from models import Tasks
 
 
 def create_task(db: Session, task: TaskCreate, user_id: int):
+    # Check if the task already exists
     check_task = db.query(Tasks) \
         .filter(Tasks.user_id == user_id) \
         .filter(Tasks.name == task.name) \
         .first()
     if check_task is None:
+        # Create a new task
         data = Tasks(user_id=user_id,
                      name=task.name,
                      start_time=task.start_time,
@@ -23,10 +25,12 @@ def create_task(db: Session, task: TaskCreate, user_id: int):
         db.commit()
         db.refresh(data)
         return "Success"
+    # Return None if the task already exists
     return
 
 
 def update_task(db: Session, task: TaskUpdate, user_id: int):
+    # Update the task with the new values
     db.query(Tasks) \
         .filter(Tasks.user_id == user_id) \
         .filter(Tasks.name == task.name) \
@@ -37,6 +41,7 @@ def update_task(db: Session, task: TaskUpdate, user_id: int):
 
 
 def delete_task(db: Session, task: TaskDelete, user_id: int):
+    # Delete the task
     db.query(Tasks) \
         .filter(Tasks.user_id == user_id) \
         .filter(Tasks.name == task.name) \
@@ -46,6 +51,7 @@ def delete_task(db: Session, task: TaskDelete, user_id: int):
 
 
 def get_tasks(db: Session, user_id: int):
+    # Retrieve all tasks for a given user and order them by status and start time
     tasks = db.query(Tasks) \
         .filter(Tasks.user_id == user_id) \
         .order_by(Tasks.status.desc()) \
@@ -55,11 +61,13 @@ def get_tasks(db: Session, user_id: int):
 
 
 def add_task_to_friend(db: Session, user_id: int, friend_id: int, task: TaskCreate):
+    # Check if the task already exists for the friend
     check_task = db.query(Tasks) \
         .filter(Tasks.user_id == friend_id) \
         .filter(Tasks.name == task.name) \
         .first()
     if check_task is None:
+        # Create a new task for the friend with the status "*" means pending
         data = Tasks(user_id=friend_id,
                      name=task.name,
                      start_time=task.start_time,
@@ -74,4 +82,5 @@ def add_task_to_friend(db: Session, user_id: int, friend_id: int, task: TaskCrea
         db.commit()
         db.refresh(data)
         return "Success"
+    # Return None if the task already exists
     return

@@ -1,65 +1,93 @@
+from typing import List
+
 from fastapi import Depends, APIRouter, HTTPException, status, Header
-from schemas import UserAuth, TaskCreate
+
 from sqlalchemy.orm import Session
+
 from database import get_db
-from crud import get_current_user, check_user, add_friend, get_friend_list, confirm_friend, delete_friend, get_tasks, \
-    add_task_to_friend
+from crud import (
+    get_current_user, check_user, add_friend, get_friend_list, confirm_friend,
+    delete_friend, get_tasks, add_task_to_friend
+)
 from models import Friends
-from schemas import FriendNew, FriendDelete, FriendConfirm
+from schemas import UserAuth, TaskCreate, FriendNew, FriendDelete, FriendConfirm, FriendBase
 
 router_friend = APIRouter(prefix="/friend")
 
 
-@router_friend.post("", tags=["Friends"])
+# Endpoint to add a friend
+@router_friend.post("", tags=["Friends"], response_model=str)
 async def add_a_friend(friend: FriendNew, db: Session = Depends(get_db),
                        current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
+    # Call the 'add_friend' function to add the friend to the current user's friend list
     result = add_friend(db=db, friend=friend, user_id=db_user.id)
+    # Check if the result is None (i.e., the friend was not found)
     if result is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
+    # Check if the result is "Found" (i.e., the friend is already in the current user's friend list)
     elif result == "Found":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Connection already exists",
         )
+    # If the friend was successfully added to the current user's friend list, return a success message
     else:
         return "Success"
 
 
-@router_friend.get("", tags=["Friends"])
+# Endpoint to get the list of friends
+@router_friend.get("", tags=["Friends"], response_model=List[FriendBase])
 async def friend_list(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
+    # Call the 'get_friend_list' function to get the list of friends of the current user
     return get_friend_list(db=db, user_id=db_user.id)
 
 
-@router_friend.patch("", tags=["Friends"])
+# Endpoint to confirm a friend
+@router_friend.patch("", tags=["Friends"], response_model=str)
 async def confirm_a_friend(friend: FriendConfirm, db: Session = Depends(get_db),
                            current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
+    # Call the 'confirm_friend' function to confirm the friendship
     return confirm_friend(db=db, friend=friend, user_id=db_user.id)
 
 
-@router_friend.delete("", tags=["Friends"])
+# Endpoint to delete a friend
+@router_friend.delete("", tags=["Friends"], response_model=str)
 async def delete_a_friend(friend: FriendDelete, db: Session = Depends(get_db),
                           current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
+    # Call the 'delete_friend' function to delete the friend from the current user's friend list
     return delete_friend(db=db, friend=friend, user_id=db_user.id)
 
 
-@router_friend.get("/tasks", tags=["Friends", "Tasks"])
+# Endpoint to get the tasks of a friend
+@router_friend.get("/tasks", tags=["Friends", "Tasks"], response_model=List[TaskCreate])
 async def friend_tasks(friend_id: int = Header(),
                        db: Session = Depends(get_db),
                        current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
+
+    # Check if there is a friendship between the current user and the friend
     check_friendship = db.query(Friends) \
         .filter(Friends.user_id == db_user.id) \
         .filter(Friends.friend_id == friend_id) \
         .all()
+
+    # If there is a friendship, return the friend's tasks
     if check_friendship:
         return [get_tasks(db=db, user_id=friend_id)]
+
+    # If there is no friendship, raise an HTTPException with 400 status code and "Something went wrong" detail
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -67,10 +95,13 @@ async def friend_tasks(friend_id: int = Header(),
         )
 
 
-@router_friend.post("/tasks", tags=["Friends", "Tasks"])
+@router_friend.post("/tasks", tags=["Friends", "Tasks"], response_model=str)
 async def create_a_task_with_a_friend(task: TaskCreate,
                                       friend_id: int = Header(),
                                       db: Session = Depends(get_db),
                                       current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
+
+    # Add a task to a friend's to-do list
     return add_task_to_friend(db=db, user_id=db_user.id, friend_id=friend_id, task=task)

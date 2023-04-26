@@ -1,19 +1,21 @@
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from hashlib import sha256 as hasher
-from crud import get_user_by_username
 from sqlalchemy.orm import Session
-from database import get_db
 from fastapi import Depends, HTTPException, status
 from datetime import datetime, timedelta
 from config import get_settings
 from schemas import UserAuth
+from crud import get_user_by_username
+from database import get_db
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="tokens/new")
 settings = get_settings()
 
 
 def verify_pass(username: str, password: str, db: Session = Depends(get_db)):
+    # Verify user's password by hashing it and comparing with the stored hashed password
     hashed_password = hasher((settings.SALT + password + settings.SALT).encode()).hexdigest()
     db_user = get_user_by_username(db, username=username)
     if hashed_password != db_user.password:
@@ -22,6 +24,7 @@ def verify_pass(username: str, password: str, db: Session = Depends(get_db)):
 
 
 def auth_user(username: str, password: str, db: Session = Depends(get_db)):
+    # Authenticate user by verifying their password and getting their information from the database
     db_user = get_user_by_username(db, username=username)
     if db_user is None:
         return False
@@ -31,6 +34,7 @@ def auth_user(username: str, password: str, db: Session = Depends(get_db)):
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    # Create an access token with an expiration time and the provided data
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -42,6 +46,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    # Get the current user from the provided access token
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -62,6 +67,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 
 
 def check_user(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
+    # Check if the current user exists in the database
     db_user = get_user_by_username(db, username=current_user.username)
     if db_user is None:
         raise HTTPException(status_code=401, detail="Unknown user")
