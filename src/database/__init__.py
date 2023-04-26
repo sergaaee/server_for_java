@@ -1,2 +1,2 @@
 # database initialisation
-from database.database import SessionLocal, engine, Base, get_db
+from database.database import Session, engine, Base, get_db

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from fastapi import Depends, APIRouter, HTTPException
 from pydantic import BaseModel
@@ -40,7 +40,7 @@ async def create_a_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 # Endpoint to get a user with their associated tasks
-@router_users.get("", tags=["User"], response_model=BaseUser)
+@router_users.get("", tags=["User"])
 async def user_with_tasks(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
     # Check that the current user is valid and get their associated tasks
     user = check_user(db=db, current_user=current_user)

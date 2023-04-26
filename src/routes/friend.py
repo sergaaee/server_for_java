@@ -41,7 +41,7 @@ async def add_a_friend(friend: FriendNew, db: Session = Depends(get_db),
 
 
 # Endpoint to get the list of friends
-@router_friend.get("", tags=["Friends"], response_model=List[FriendBase])
+@router_friend.get("", tags=["Friends"])
 async def friend_list(db: Session = Depends(get_db), current_user: UserAuth = Depends(get_current_user)):
     # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)

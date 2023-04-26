@@ -16,7 +16,7 @@ router_tasks = APIRouter(prefix="/tasks")
 
 
 @router_tasks.post("", tags=["Tasks"], response_model=str)
-async def create_task(
+async def create_a_task(
     task: TaskCreate,
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
@@ -43,7 +43,7 @@ async def create_task(
     return result
 
 
-@router_tasks.get("", tags=["Tasks"], response_model=List[TaskCreate])
+@router_tasks.get("", tags=["Tasks"])
 async def get_all_tasks(
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
@@ -60,11 +60,11 @@ async def get_all_tasks(
     # Get all tasks of the authenticated user
     tasks = get_tasks(db=db, user_id=db_user.id)
 
-    return tasks
+    return [tasks]
 
 
 @router_tasks.patch("", tags=["Tasks"], response_model=str)
-async def update_task(
+async def update_a_task(
     task: TaskUpdate,
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
@@ -85,7 +85,7 @@ async def update_task(
 
 
 @router_tasks.delete("", tags=["Tasks"], response_model=str)
-async def delete_task(
+async def delete_a_task(
     task: TaskDelete,
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
