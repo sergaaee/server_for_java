@@ -70,7 +70,7 @@ async def delete_a_friend(friend: FriendDelete, db: Session = Depends(get_db),
 
 
 # Endpoint to get the tasks of a friend
-@router_friend.get("/tasks", tags=["Friends", "Tasks"], response_model=List[TaskCreate])
+@router_friend.get("/tasks", tags=["Friends", "Tasks"])
 async def friend_tasks(friend_id: int = Header(),
                        db: Session = Depends(get_db),
                        current_user: UserAuth = Depends(get_current_user)):

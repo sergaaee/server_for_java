@@ -6,7 +6,6 @@ from config import get_db_settings
 
 db_settings = get_db_settings()
 
-
 # Create a database engine object
 engine = create_engine(
     "postgresql+psycopg2://{db_username}:{db_password}@{db_host}:{db_port}/{db_name}".format(
@@ -18,6 +17,10 @@ engine = create_engine(
     ),
     echo=True
 )
+
+# for test
+DATABASE_URL = "sqlite:///C:/Users/10658/PycharmProjects/server_for_java/src/database/db.db"
+engine = create_engine(DATABASE_URL)
 
 # Create a session-maker object to provide a database session
 Session = sessionmaker(engine)

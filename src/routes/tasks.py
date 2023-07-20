@@ -1,8 +1,6 @@
-from typing import List
 from fastapi import Depends, APIRouter, HTTPException, status
-from schemas import UserAuth, TaskCreate, TaskDelete, TaskUpdate
 from sqlalchemy.orm import Session
-from database import get_db
+
 from crud import (
     get_current_user,
     check_user,
@@ -11,15 +9,17 @@ from crud import (
     delete_task,
     get_tasks
 )
+from database import get_db
+from schemas import UserAuth, TaskCreate, TaskDelete, TaskUpdate
 
 router_tasks = APIRouter(prefix="/tasks")
 
 
 @router_tasks.post("", tags=["Tasks"], response_model=str)
 async def create_a_task(
-    task: TaskCreate,
-    db: Session = Depends(get_db),
-    current_user: UserAuth = Depends(get_current_user)
+        task: TaskCreate,
+        db: Session = Depends(get_db),
+        current_user: UserAuth = Depends(get_current_user)
 ):
     """
     Create a new task for the authenticated user.

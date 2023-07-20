@@ -3,3 +3,4 @@ src/.env
 *.iml
 db.db
 *.pyc
+/tests/.env

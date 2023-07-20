@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 
 from fastapi import Depends, APIRouter, HTTPException
 from pydantic import BaseModel
@@ -12,7 +12,8 @@ from crud import (
     create_user,
     check_user,
     get_tasks,
-    get_current_user
+    get_current_user,
+    delete_user_by_email
 )
 
 # Define a new router for user-related endpoints
@@ -49,3 +50,8 @@ async def user_with_tasks(db: Session = Depends(get_db), current_user: UserAuth 
     user.__delattr__("password")
     # Return the user and their associated tasks
     return user, tasks
+
+
+@router_users.delete("", tags=["User"])
+async def user_by_email(email: str, db: Session = Depends(get_db)):
+    delete_user_by_email(email=email, db=db)

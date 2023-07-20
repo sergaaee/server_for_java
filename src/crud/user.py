@@ -45,3 +45,11 @@ def get_user_by_email(db: Session, email: str):
     return db.query(Users) \
         .filter(Users.email == email) \
         .first()
+
+
+def delete_user_by_email(db: Session, email: str):
+    db.query(Users) \
+        .filter(Users.email == email) \
+        .delete()
+    db.commit()
+    return "Success"
