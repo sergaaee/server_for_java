@@ -1,3 +1,5 @@
+import json
+
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 
@@ -55,4 +57,14 @@ def test_delete_user():
 
 
 def test_get_user_with_tasks():
-    pass
+    crud.create_user = MagicMock(return_value=mock_user)
+
+    client.post("/users", json=user_data)
+    token = client.post("/tokens",
+                        data={"username": user_data["username"], "password": user_data["password"]},
+                        headers={"fingerprint": "1234", "Content-Type": "application/x-www-form-urlencoded"})
+
+    response = client.get("/users", headers={"Authorization": "Bearer " + token.json()["access_token"]})
+    assert len(response.json()) == 2
+
+    client.delete("/users", params={"email": user_data["email"]})
