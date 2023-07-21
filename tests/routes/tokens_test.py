@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import MagicMock
 
@@ -14,32 +15,29 @@ fingerprint = "1234"
 endpoint = "/tokens"
 
 
-def test_create_a_session():
+@pytest.fixture
+def setup_and_set_down_acts():
     crud.create_user = MagicMock(return_value=mock_user)
-
     client.post("/users", json=user_data)
-
-    tokens = client.post(endpoint,
-                         data={"username": user_data["username"], "password": user_data["password"]},
-                         headers={"fingerprint": fingerprint, "Content-Type": "application/x-www-form-urlencoded"})
-    assert tokens.json()["access_token"]
-    assert tokens.json()["refresh_token"]
-
+    yield
     client.delete("/users", params={"email": user_data["email"]})
 
 
-def test_refresh_all_tokens():
-    crud.create_user = MagicMock(return_value=mock_user)
+@pytest.fixture
+def auth_token(setup_and_set_down_acts):
+    response = client.post("/tokens",
+                           data={"username": user_data["username"], "password": user_data["password"]},
+                           headers={"fingerprint": "1234", "Content-Type": "application/x-www-form-urlencoded"})
+    return response.json()
 
-    client.post("/users", json=user_data)
 
-    tokens = client.post(endpoint,
-                         data={"username": user_data["username"], "password": user_data["password"]},
-                         headers={"fingerprint": fingerprint, "Content-Type": "application/x-www-form-urlencoded"})
+def test_create_a_session(auth_token):
+    assert auth_token["access_token"]
+    assert auth_token["refresh_token"]
 
+
+def test_refresh_all_tokens(auth_token):
     new_access_token = client.post(endpoint + "/refresh",
                                    headers={"fingerprint": fingerprint,
-                                            "refresh-token": tokens.json()["refresh_token"]})
+                                            "refresh-token": auth_token["refresh_token"]})
     assert new_access_token.json()["access_token"]
-
-    client.delete("/users", params={"email": user_data["email"]})
