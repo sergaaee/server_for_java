@@ -37,7 +37,15 @@ async def create_a_user(user: UserCreate, db: Session = Depends(get_db)):
     elif db_user_email:
         raise HTTPException(status_code=422, detail="Email already registered")
     # If the user doesn't already exist, create a new one
-    return create_user(db=db, user=user)
+    res = create_user(db=db, user=user)
+    if res == "Username":
+        raise HTTPException(status_code=422,
+                            detail="Username must contain only a-z-A-Z and 0-9 symbols and has to be 4+ symbols long")
+    elif res == "Password":
+        raise HTTPException(status_code=422,
+                            detail="Password must contain only a-z-A-Z and 0-9 symbols and has to be 8+ symbols long")
+    else:
+        return res
 
 
 # Endpoint to get a user with their associated tasks

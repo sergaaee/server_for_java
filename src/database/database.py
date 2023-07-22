@@ -19,8 +19,8 @@ engine = create_engine(
 )
 
 # for test
-# DATABASE_URL = "sqlite:///C:/Users/10658/PycharmProjects/server_for_java/src/database/db.db"
-# engine = create_engine(DATABASE_URL)
+DATABASE_URL = "sqlite:///C:/Users/10658/PycharmProjects/server_for_java/src/database/db.db"
+engine = create_engine(DATABASE_URL)
 
 # Create a session-maker object to provide a database session
 Session = sessionmaker(engine)

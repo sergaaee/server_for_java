@@ -15,6 +15,10 @@ mock_user = MagicMock(spec=models.Users)
 mock_user.username = user_data["username"]
 mock_user.email = user_data["email"]
 
+wrong_password = "1234"
+wrong_username = "wro"
+wrong_email = "1234"
+
 
 @pytest.fixture
 def setup_and_set_down_acts():
@@ -61,3 +65,20 @@ def test_get_user_with_tasks(setup_and_set_down_acts):
 
     response = client.get(endpoint, headers={"Authorization": "Bearer " + tokens.json()["access_token"]})
     assert len(response.json()) == 2
+
+
+def test_get_user_with_tasks_wrong_token(setup_and_set_down_acts):
+    fake_token = "1234"
+
+    response = client.get(endpoint, headers={"Authorization": "Bearer " + fake_token})
+    assert response.status_code == 401
+
+
+@pytest.mark.parametrize("username, password, email", [
+    (wrong_username, user_data["password"], user_data["email"]),
+    (user_data["username"], wrong_password, user_data["email"]),
+    (user_data["username"], user_data["password"], wrong_email)
+])
+def test_create_a_user_wrong_data(username, password, email):
+    response = client.post(endpoint, json=dict(username=username, password=password, email=email))
+    assert response.status_code == 422

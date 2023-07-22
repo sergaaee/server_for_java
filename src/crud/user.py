@@ -11,7 +11,10 @@ settings = get_settings()
 def create_user(db: Session, user: UserCreate):
     # Get salt from the settings
     salt = settings.SALT
-
+    if len(user.username) < 4:
+        return "Username"
+    elif len(user.password) < 8:
+        return "Password"
     # Hash the password using the salt and store the user in the database
     db_user = Users(
         username=user.username,

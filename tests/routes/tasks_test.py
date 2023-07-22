@@ -72,3 +72,35 @@ def test_get_all_tasks(auth_token):
 
 def test_update_task_name():
     pass
+
+
+def test_update_task_stime():
+    pass
+
+
+def test_update_task_etime():
+    pass
+
+
+def test_update_task_desc():
+    pass
+
+
+def test_update_task_status():
+    pass
+
+
+def test_update_task_sharing_to():
+    pass
+
+
+def test_update_task_wrong_data():
+    pass
+
+
+def test_create_a_task_wrong_data():
+    pass
+
+
+def test_delete_a_task_wrong_name():
+    pass
