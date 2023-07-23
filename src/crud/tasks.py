@@ -31,6 +31,12 @@ def create_task(db: Session, task: TaskCreate, user_id: int):
 
 def update_task(db: Session, task: TaskUpdate, user_id: int):
     # Update the task with the new values
+    check_task = db.query(Tasks) \
+        .filter(Tasks.user_id == user_id) \
+        .filter(Tasks.name == task.name) \
+        .first()
+    if check_task is None:
+        return
     db.query(Tasks) \
         .filter(Tasks.user_id == user_id) \
         .filter(Tasks.name == task.name) \
@@ -42,6 +48,12 @@ def update_task(db: Session, task: TaskUpdate, user_id: int):
 
 def delete_task(db: Session, task: TaskDelete, user_id: int):
     # Delete the task
+    check_task = db.query(Tasks) \
+        .filter(Tasks.user_id == user_id) \
+        .filter(Tasks.name == task.name) \
+        .first()
+    if check_task is None:
+        return
     db.query(Tasks) \
         .filter(Tasks.user_id == user_id) \
         .filter(Tasks.name == task.name) \

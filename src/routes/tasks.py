@@ -1,3 +1,6 @@
+import datetime
+import logging
+
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -27,6 +30,14 @@ async def create_a_task(
     Returns:
         str: "Success" if everything is okay.
     """
+    try:
+        datetime.datetime.strptime(str(task.start_time), "%Y-%m-%d %H:%M:%S")
+        datetime.datetime.strptime(str(task.end_time), "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Incorrect datetime format",
+        )
     # Check if the user is authenticated
     db_user = check_user(db=db, current_user=current_user)
 
@@ -75,11 +86,24 @@ async def update_a_task(
     Returns:
         str: "Success" if everything is okay.
     """
+    try:
+        datetime.datetime.strptime(str(task.new_stime), "%Y-%m-%d %H:%M:%S")
+        datetime.datetime.strptime(str(task.new_etime), "%Y-%m-%d %H:%M:%S")
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Incorrect datetime format",
+        )
     # Check if the user is authenticated
     db_user = check_user(db=db, current_user=current_user)
-
     # Update the task
     result = update_task(db=db, task=task, user_id=db_user.id)
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        )
 
     return result
 
@@ -101,5 +125,10 @@ async def delete_a_task(
 
     # Delete the task
     result = delete_task(db=db, task=task, user_id=db_user.id)
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Task not found",
+        )
 
     return result

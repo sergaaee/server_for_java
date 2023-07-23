@@ -17,8 +17,8 @@ mock_user = MagicMock(spec=models.Users)
 mock_user.username = user_data["username"]
 mock_user.email = user_data["email"]
 
-task_data = dict(name="test", start_time=str(datetime.datetime.utcnow()), end_time=str(datetime.datetime.utcnow()),
-                 description="desc", status="some status", created_at=str(datetime.datetime.utcnow()), sharing_from=0,
+task_data = dict(name="test", start_time="2023-07-23 10:00:00", end_time="2023-07-23 10:00:00",
+                 description="desc", status="status", created_at=str(datetime.datetime.utcnow()), sharing_from=0,
                  sharing_to=1)
 mock_task = MagicMock(spec=models.Tasks)
 
@@ -70,37 +70,88 @@ def test_get_all_tasks(auth_token):
                    headers={"Authorization": "Bearer " + auth_token})
 
 
-def test_update_task_name():
-    pass
+@pytest.mark.parametrize("new_name, new_stime, new_etime, new_desc, new_status", [
+    ("new name", task_data["start_time"], task_data["end_time"], task_data["description"], task_data["status"]),
+    (task_data["name"], "2023-07-23 11:00:00", task_data["end_time"], task_data["description"], task_data["status"]),
+    (task_data["name"], task_data["start_time"], "2023-07-23 10:30:00", task_data["description"], task_data["status"]),
+    (task_data["name"], task_data["start_time"], task_data["end_time"], "new desc", task_data["status"]),
+    (task_data["name"], task_data["start_time"], task_data["end_time"], task_data["description"], "new status")
+])
+def test_update_task(auth_token, new_name, new_stime, new_etime, new_desc, new_status):
+    client.post(endpoint,
+                json=task_data,
+                headers={"Authorization": "Bearer " + auth_token})
+
+    response = client.patch(endpoint,
+                            json=dict(name=task_data["name"],
+                                      new_name=new_name,
+                                      new_stime=new_stime,
+                                      new_etime=new_etime,
+                                      new_desc=new_desc,
+                                      new_status=new_status),
+                            headers={"Authorization": "Bearer " + auth_token})
+    assert response.status_code == 200
+
+    client.request(method="DELETE", url=endpoint,
+                   json={"name": task_data["name"]},
+                   headers={"Authorization": "Bearer " + auth_token})
 
 
-def test_update_task_stime():
-    pass
+@pytest.mark.parametrize("new_stime, new_etime", [
+    (123, task_data["end_time"]),
+    (task_data["start_time"], 123),
+])
+def test_update_task_wrong_datetime_format(auth_token, new_stime, new_etime):
+    client.post(endpoint,
+                json=task_data,
+                headers={"Authorization": "Bearer " + auth_token})
+
+    response = client.patch(endpoint,
+                            json=dict(name=task_data["name"],
+                                      new_name=task_data["name"],
+                                      new_stime=new_stime,
+                                      new_etime=new_etime,
+                                      new_desc=task_data["description"],
+                                      new_status=task_data["status"]),
+                            headers={"Authorization": "Bearer " + auth_token})
+    assert response.status_code == 422
+
+    client.request(method="DELETE", url=endpoint,
+                   json={"name": task_data["name"]},
+                   headers={"Authorization": "Bearer " + auth_token})
 
 
-def test_update_task_etime():
-    pass
+@pytest.mark.parametrize("start_time, end_time", [
+    (123, task_data["end_time"]),
+    (task_data["start_time"], 123)
+])
+def test_create_a_task_wrong_data(auth_token, start_time, end_time):
+    temp_task_data = task_data.copy()
+    temp_task_data["start_time"] = start_time
+    temp_task_data["end_time"] = end_time
+    response = client.post(endpoint,
+                           json=temp_task_data,
+                           headers={"Authorization": "Bearer " + auth_token})
+    assert response.status_code == 422
 
 
-def test_update_task_desc():
-    pass
+def test_create_a_task_name_already_exists(auth_token):
+    client.post(endpoint,
+                json=task_data,
+                headers={"Authorization": "Bearer " + auth_token})
+
+    response = client.post(endpoint,
+                           json=task_data,
+                           headers={"Authorization": "Bearer " + auth_token})
+    assert response.status_code == 409
+
+    client.request(method="DELETE", url=endpoint,
+                   json={"name": task_data["name"]},
+                   headers={"Authorization": "Bearer " + auth_token})
 
 
-def test_update_task_status():
-    pass
-
-
-def test_update_task_sharing_to():
-    pass
-
-
-def test_update_task_wrong_data():
-    pass
-
-
-def test_create_a_task_wrong_data():
-    pass
-
-
-def test_delete_a_task_wrong_name():
-    pass
+def test_delete_a_task_wrong_name(auth_token):
+    response = client.request(method="DELETE", url=endpoint,
+                              json={"name": task_data["name"]},
+                              headers={"Authorization": "Bearer " + auth_token})
+    assert response.status_code == 404
