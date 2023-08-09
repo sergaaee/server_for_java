@@ -17,8 +17,8 @@ router_friend = APIRouter(prefix="/friend")
 
 # Endpoint to add a friend
 @router_friend.post("", tags=["Friends"], response_model=str)
-async def add_a_friend(friend: FriendNew, db: Session = Depends(get_db),
-                       current_user: UserAuth = Depends(get_current_user)):
+async def add_a_friend_by_id(friend: FriendNew, db: Session = Depends(get_db),
+                             current_user: UserAuth = Depends(get_current_user)):
     # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
     # Call the 'add_friend' function to add the friend to the current user's friend list
@@ -61,8 +61,8 @@ async def confirm_a_friend(friend: FriendConfirm, db: Session = Depends(get_db),
 
 # Endpoint to delete a friend
 @router_friend.delete("", tags=["Friends"], response_model=str)
-async def delete_a_friend(friend: FriendDelete, db: Session = Depends(get_db),
-                          current_user: UserAuth = Depends(get_current_user)):
+async def delete_a_friend_by_id(friend: FriendDelete, db: Session = Depends(get_db),
+                                current_user: UserAuth = Depends(get_current_user)):
     # Check if the current user is authenticated
     db_user = check_user(db=db, current_user=current_user)
     # Call the 'delete_friend' function to delete the friend from the current user's friend list
@@ -71,7 +71,7 @@ async def delete_a_friend(friend: FriendDelete, db: Session = Depends(get_db),
 
 # Endpoint to get the tasks of a friend
 @router_friend.get("/tasks", tags=["Friends", "Tasks"])
-async def friend_tasks(friend_id: int = Header(),
+async def friend_tasks(friend_id: str = Header(),
                        db: Session = Depends(get_db),
                        current_user: UserAuth = Depends(get_current_user)):
     # Check if the current user is authenticated
@@ -80,18 +80,17 @@ async def friend_tasks(friend_id: int = Header(),
     # Check if there is a friendship between the current user and the friend
     check_friendship = db.query(Friends) \
         .filter(Friends.user_id == db_user.id) \
-        .filter(Friends.friend_id == friend_id) \
+        .filter(Friends.friend_id == int(friend_id)) \
         .all()
 
     # If there is a friendship, return the friend's tasks
     if check_friendship:
-        return [get_tasks(db=db, user_id=friend_id)]
+        return [get_tasks(db=db, user_id=int(friend_id))]
 
-    # If there is no friendship, raise an HTTPException with 400 status code and "Something went wrong" detail
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Something went wrong",
+            detail="You aren't friends",
         )
 
 

@@ -39,6 +39,12 @@ def auth_token(setup_and_set_down_acts):
     return response.json()["access_token"]
 
 
+def delete_task(auth_token):
+    client.request(method="DELETE", url=endpoint,
+                   json={"name": task_data["name"]},
+                   headers={"Authorization": "Bearer " + auth_token})
+
+
 def test_delete_a_task(auth_token):
     client.post(endpoint,
                 json=task_data,
@@ -56,18 +62,15 @@ def test_create_a_task(auth_token):
                            headers={"Authorization": "Bearer " + auth_token})
     assert response.status_code == 200
 
-    client.request(method="DELETE", url=endpoint,
-                   json={"name": task_data["name"]},
-                   headers={"Authorization": "Bearer " + auth_token})
+    tasks = client.get("/tasks", headers={"Authorization": "Bearer " + auth_token})
+    assert tasks.json()[0][0].get("name") == task_data.get("name")
+
+    delete_task(auth_token)
 
 
 def test_get_all_tasks(auth_token):
     response = client.get(endpoint, headers={"Authorization": "Bearer " + auth_token})
     assert len(response.json()) == 1
-
-    client.request(method="DELETE", url=endpoint,
-                   json={"name": task_data["name"]},
-                   headers={"Authorization": "Bearer " + auth_token})
 
 
 @pytest.mark.parametrize("new_name, new_stime, new_etime, new_desc, new_status", [
@@ -93,7 +96,7 @@ def test_update_task(auth_token, new_name, new_stime, new_etime, new_desc, new_s
     assert response.status_code == 200
 
     client.request(method="DELETE", url=endpoint,
-                   json={"name": task_data["name"]},
+                   json={"name": new_name},
                    headers={"Authorization": "Bearer " + auth_token})
 
 
@@ -116,9 +119,7 @@ def test_update_task_wrong_datetime_format(auth_token, new_stime, new_etime):
                             headers={"Authorization": "Bearer " + auth_token})
     assert response.status_code == 422
 
-    client.request(method="DELETE", url=endpoint,
-                   json={"name": task_data["name"]},
-                   headers={"Authorization": "Bearer " + auth_token})
+    delete_task(auth_token)
 
 
 @pytest.mark.parametrize("start_time, end_time", [
@@ -145,9 +146,7 @@ def test_create_a_task_name_already_exists(auth_token):
                            headers={"Authorization": "Bearer " + auth_token})
     assert response.status_code == 409
 
-    client.request(method="DELETE", url=endpoint,
-                   json={"name": task_data["name"]},
-                   headers={"Authorization": "Bearer " + auth_token})
+    delete_task(auth_token)
 
 
 def test_delete_a_task_wrong_name(auth_token):

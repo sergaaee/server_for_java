@@ -1,3 +1,5 @@
+import datetime
+
 from sqlalchemy.orm import Session
 from schemas import FriendNew, FriendConfirm, FriendDelete
 from models import Friends
@@ -27,7 +29,7 @@ def add_friend(db: Session, friend: FriendNew, user_id: int):
         user_id=user_id,
         friend_id=friend.friend_id,
         status="pending",
-        created_at=friend.created_at
+        created_at=datetime.datetime.now()
     )
     db.add(data)
     db.commit()
@@ -39,7 +41,7 @@ def confirm_friend(db: Session, friend: FriendConfirm, user_id: int):
     db.query(Friends) \
         .filter(Friends.friend_id == user_id) \
         .filter(Friends.user_id == friend.friend_id) \
-        .update(dict(status="added", created_at=friend.created_at))
+        .update(dict(status="added", created_at=datetime.datetime.now()))
     db.commit()
 
     # Create a new friendship with "added" status for the second user
@@ -47,7 +49,7 @@ def confirm_friend(db: Session, friend: FriendConfirm, user_id: int):
         user_id=user_id,
         friend_id=friend.friend_id,
         status="added",
-        created_at=friend.created_at
+        created_at=datetime.datetime.now()
     )
     db.add(data)
     db.commit()

@@ -13,12 +13,10 @@ class FriendBase(BaseModel):
 
 class FriendNew(BaseModel):
     friend_id: int
-    created_at: datetime
 
 
 class FriendConfirm(BaseModel):
     friend_id: int
-    created_at: datetime
 
 
 class FriendDelete(BaseModel):
