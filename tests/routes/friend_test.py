@@ -89,6 +89,37 @@ def test_add_a_friend_by_id(get_tokens):
     delete_friendship(get_tokens)
 
 
+def test_add_a_friend_by_id_not_found():
+    crud.create_user = MagicMock(return_value=mock_user_1)
+    client.post("/users", json=user_data)
+    token = client.post("/tokens",
+                        data={"username": user_data["username"], "password": user_data["password"]},
+                        headers={"fingerprint": "1234", "Content-Type": "application/x-www-form-urlencoded"}) \
+        .json()["access_token"]
+
+    response = client.post(endpoint,
+                           json=dict(friend_id=2),
+                           headers={"Authorization": "Bearer " + token}
+                           )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+    client.delete("/users", params={"email": user_data["email"]})
+
+
+def test_add_a_friend_connection_already_exists(get_tokens):
+    create_and_confirm_friendship(get_tokens)
+
+    response = client.post(endpoint,
+                           json=dict(friend_id=2),
+                           headers={"Authorization": "Bearer " + get_tokens.get("token")}
+                           )
+    assert response.status_code == 409
+    assert response.json()["detail"] == "Connection already exists"
+
+    delete_friendship(get_tokens)
+
+
 def test_get_friend_list(get_tokens):
     client.post(endpoint,
                 json=dict(friend_id=2),
@@ -125,6 +156,12 @@ def test_get_friend_tasks(get_tokens):
     assert len(response.json()) == 1
 
     delete_friendship(get_tokens)
+
+
+def test_get_friend_tasks_not_friends(get_tokens):
+    response = client.get(endpoint + "/tasks",
+                          headers={"Authorization": "Bearer " + get_tokens.get("token"), "friend-id": "2"})
+    assert response.status_code == 403
 
 
 def test_create_a_task_with_a_friend(get_tokens):
