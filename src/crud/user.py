@@ -9,13 +9,13 @@ settings = get_settings()
 
 
 def create_user(db: Session, user: UserCreate):
-    # Get salt from the settings
     salt = settings.SALT
+
     if len(user.username) < 4:
-        return "Username"
+        return "Invalid username"
     elif len(user.password) < 8:
-        return "Password"
-    # Hash the password using the salt and store the user in the database
+        return "Invalid password"
+
     db_user = Users(
         username=user.username,
         password=hasher((salt + user.password + salt).encode()).hexdigest(),
@@ -30,21 +30,18 @@ def create_user(db: Session, user: UserCreate):
 
 
 def get_user_by_id(db: Session, user_id: int):
-    # Get a user from the database by their ID
     return db.query(Users) \
         .filter(Users.id == user_id) \
         .first()
 
 
 def get_user_by_username(db: Session, username: str):
-    # Get a user from the database by their username
     return db.query(Users) \
         .filter(Users.username == username) \
         .first()
 
 
 def get_user_by_email(db: Session, email: str):
-    # Get a user from the database by their email address
     return db.query(Users) \
         .filter(Users.email == email) \
         .first()

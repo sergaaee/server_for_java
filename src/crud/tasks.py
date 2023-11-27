@@ -10,7 +10,6 @@ def create_task(db: Session, task: TaskCreate, user_id: int):
         .filter(Tasks.name == task.name) \
         .first()
     if check_task is None:
-        # Create a new task
         data = Tasks(user_id=user_id,
                      name=task.name,
                      start_time=task.start_time,

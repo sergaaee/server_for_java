@@ -5,11 +5,10 @@ import datetime
 
 
 def auth_new_session(fingerprint: str, username: str, db: Session):
-    # get user ID by username from database
     user_id = db.query(Users).filter(Users.username == username).first().id
-    # generate refresh token using username
+
     refresh_token = hasher(username.encode()).hexdigest()
-    # create new session and add to database
+
     data = Sessions(user_id=user_id,
                     fingerprint=fingerprint,
                     refresh_token=refresh_token,
@@ -22,23 +21,20 @@ def auth_new_session(fingerprint: str, username: str, db: Session):
 
 def refresh_tokens(fingerprint: str, refresh_token: str, db: Session):
     try:
-        # get fingerprint from database for given refresh token
         db_fingerprint = db.query(Sessions) \
             .filter(Sessions.refresh_token == refresh_token) \
             .first() \
             .fingerprint
     except AttributeError:
-        # if session not found in database, return False
         return False
-    # check if the given fingerprint matches the one in the database
+
     if fingerprint != db_fingerprint:
-        # if fingerprints do not match, delete all sessions and return False
         db.query(Sessions) \
             .filter(Sessions.refresh_token == refresh_token) \
             .delete()
         db.commit()
         return False
-    # get the creation date of the session from the database
+
     created_at = db.query(Sessions) \
         .filter(Sessions.refresh_token == refresh_token) \
         .filter(Sessions.fingerprint == fingerprint) \

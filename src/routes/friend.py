@@ -1,5 +1,3 @@
-from typing import List
-
 from fastapi import Depends, APIRouter, HTTPException, status, Header
 
 from sqlalchemy.orm import Session
@@ -10,7 +8,7 @@ from crud import (
     delete_friend, get_tasks, add_task_to_friend
 )
 from models import Friends
-from schemas import UserAuth, TaskCreate, FriendNew, FriendDelete, FriendConfirm, FriendBase
+from schemas import UserAuth, TaskCreate, FriendNew, FriendDelete, FriendConfirm
 
 router_friend = APIRouter(prefix="/friend")
 

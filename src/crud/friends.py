@@ -24,7 +24,6 @@ def add_friend(db: Session, friend: FriendNew, user_id: int):
     if check_friendship1 or check_friendship2 or user_id == friend.friend_id:
         return "Found"
 
-    # Create a new friendship with "pending" status
     data = Friends(
         user_id=user_id,
         friend_id=friend.friend_id,
@@ -71,7 +70,6 @@ def get_friend_list(db: Session, user_id: int):
         .filter(Friends.status == "pending") \
         .all()
 
-    # Return the lists
     return [confirmed_friends, pending_to_user, pending_from_user]
 
 
@@ -82,9 +80,11 @@ def delete_friend(db: Session, user_id: int, friend: FriendDelete):
         .filter(Friends.friend_id == friend.friend_id) \
         .delete()
     db.commit()
+
     db.query(Friends) \
         .filter(Friends.friend_id == user_id) \
         .filter(Friends.user_id == friend.friend_id) \
         .delete()
     db.commit()
+
     return "Success"

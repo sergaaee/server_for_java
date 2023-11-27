@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
@@ -24,12 +23,6 @@ async def create_a_task(
         db: Session = Depends(get_db),
         current_user: UserAuth = Depends(get_current_user)
 ):
-    """
-    Create a new task for the authenticated user.
-
-    Returns:
-        str: "Success" if everything is okay.
-    """
     try:
         datetime.datetime.strptime(str(task.start_time), "%Y-%m-%d %H:%M:%S")
         datetime.datetime.strptime(str(task.end_time), "%Y-%m-%d %H:%M:%S")
@@ -59,16 +52,9 @@ async def get_all_tasks(
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
 ):
-    """
-    Get all tasks of the authenticated user.
-
-    Returns:
-        dict: A dictionary with all user's tasks
-    """
     # Check if the user is authenticated
     db_user = check_user(db=db, current_user=current_user)
 
-    # Get all tasks of the authenticated user
     tasks = get_tasks(db=db, user_id=db_user.id)
 
     return [tasks]
@@ -80,12 +66,6 @@ async def update_a_task(
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
 ):
-    """
-    Update an existing task of the authenticated user.
-
-    Returns:
-        str: "Success" if everything is okay.
-    """
     try:
         datetime.datetime.strptime(str(task.new_stime), "%Y-%m-%d %H:%M:%S")
         datetime.datetime.strptime(str(task.new_etime), "%Y-%m-%d %H:%M:%S")
@@ -96,7 +76,7 @@ async def update_a_task(
         )
     # Check if the user is authenticated
     db_user = check_user(db=db, current_user=current_user)
-    # Update the task
+
     result = update_task(db=db, task=task, user_id=db_user.id)
 
     if result is None:
@@ -114,12 +94,6 @@ async def delete_a_task(
     db: Session = Depends(get_db),
     current_user: UserAuth = Depends(get_current_user)
 ):
-    """
-    Delete an existing task of the authenticated user.
-
-    Returns:
-        str: "Success" if everything is okay.
-    """
     # Check if the user is authenticated
     db_user = check_user(db=db, current_user=current_user)
 
